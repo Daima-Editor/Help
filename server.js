@@ -4,6 +4,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const formatMessage = require('./utils/messages');
 const {userJoin, getCurrentUser, userLeave, getRoomUsers} = require('./utils/users');
+var numClients = {};
 
 const app = express();
 const server = http.createServer(app);
@@ -25,10 +26,16 @@ io.on('connection', socket => {
         //Broadcast when a user connects to all except to client
         socket.broadcast.to(user.room).emit('message', formatMessage('Daima Bot', `${user.username} has joined!`));
 
-        //User and room info
+        if (numClients[user.room] == undefined) {
+            numClients[user.room] = 1;
+        } else {
+            numClients[user.room]++;
+        }
+
+        //room info
         io.to(user.room).emit('roomUsers',{
             room: user.room,
-            users: getRoomUsers(user.room)
+            users: numClients[user.room]
         });
 
     });
@@ -45,9 +52,11 @@ io.on('connection', socket => {
         if(user){
             io.to(user.room).emit('message', formatMessage('Daima Bot', `${user.username} has left`));
 
+            numClients[user.room]--;
+
             io.to(user.room).emit('roomUsers',{
                 room: user.room,
-                users: getRoomUsers(user.room)
+                users: numClients[user.room]
             });
         }
     });

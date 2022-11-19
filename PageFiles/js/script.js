@@ -1,7 +1,7 @@
 const chatForm = document.getElementById('chat-form');
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
-
+const userList = document.getElementById('users_online')
 
 //To get name and room 
 const {username, room} =  Qs.parse(location.search, {
@@ -14,8 +14,8 @@ const socket = io();
 socket.emit('joinRoom', {username, room});
 
 //Get room and users
-socket.on('roomUsers', ({room}) => { 
-    outputRoomName(room);
+socket.on('roomUsers', ({room, users}) => { 
+    outputRoomName(room, users);
 });
 
 socket.on('message', message => { //message from bot
@@ -47,12 +47,13 @@ function outputMessage(message) {
     document.querySelector('.chat-messages').appendChild(div);
 }
 
-//Add room name to DOM
-function outputRoomName(room){
+//Add room name number of users online to DOM
+function outputRoomName(room, users){
     if(typeof room !== 'undefined') {roomName.innerText = `Chatroom: ${room}`;}
     else roomName.innerText = 'Chatroom';
+    userList.innerHTML = `Online: ${users}`;
 }
 
 
-//Prompt the user before leave chat room
+//leave chat room
 document.getElementById('leave-btn').addEventListener('click', () => {window.location = '../index.html';});
